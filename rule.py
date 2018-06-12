@@ -22,7 +22,6 @@ convert_rule = [
 
 # 内容替换逻辑
 def convert(buf, ruleItem):
-	print (ruleItem[0])
 	if ruleItem[0] == ConvertType.replace:		# 字符串替换
 		buf = buf.replace(ruleItem[1], ruleItem[2])
 	elif ruleItem[0] == ConvertType.pattern:	# 正则表达式替换
