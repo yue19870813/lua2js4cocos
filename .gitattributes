@@ -1,2 +1,2 @@
-*.lua linguist-language=swift
-*.js linguist-language=swift
+*.lua linguist-language=python
+*.js linguist-language=python
