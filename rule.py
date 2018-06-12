@@ -13,18 +13,19 @@ __author__ = 'ituuz'
 ConvertType = Enum('ConvertType', ('replace', 'pattern'))
 
 convert_rule = [
-	# 规则1：xxx
-	[ConvertType.replace, "aa", "dd"],
+	# 规则1：local -> var
+	[ConvertType.pattern, '(?<=\W)local +(\w+) *= *', 'var \g<1> = '],
+	[ConvertType.pattern, '(?<=\W)local +(\w+)(?=\W)', 'var \g<1>'],
 	# 规则2：xxx
-	[ConvertType.pattern, "bb", "fds"]
+	[ConvertType.pattern, "bb123s", "fds"]
 ]
 
 # 内容替换逻辑
 def convert(buf, ruleItem):
-
+	print (ruleItem[0])
 	if ruleItem[0] == ConvertType.replace:		# 字符串替换
 		buf = buf.replace(ruleItem[1], ruleItem[2])
-	elif ruleItem[0] == ConvertType.replace:	# 正则表达式替换
+	elif ruleItem[0] == ConvertType.pattern:	# 正则表达式替换
 		buf = re.sub(ruleItem[1], ruleItem[2], buf)
 	return buf
 
