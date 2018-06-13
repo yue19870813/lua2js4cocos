@@ -47,7 +47,25 @@ def stringReplace(str):
 		idx = ctorStr.rfind("\n")
 		if idx != -1:
 			ctorStr = ctorStr[0:idx]
-			tempStr = tempStr.replace(ctorStr, " // old ctor of lua has delete")
+			tempStr = tempStr.replace(ctorStr, " // old ctor of lua has deleted")
+			
+			# 开始修改构造函数中的内容
+			# 获取构造函数中的参数
+			ctorParamMatch = re.search('function\s+([\w]+?):ctor *\(([\s\S]*?)\)', ctorStr)
+			ctorParam = ctorParamMatch.group(0)
+
+			tempMatch = re.search('\(([\s\S]*?)\)', ctorParam)
+			ctorParam = tempMatch.group(0)
+
+			# 获取类名
+			classNameMatch = re.search('\nlocal\s+(\w+)\s*=\s*class\s*\(\s*\"(\S+?)\"', tempStr)
+			classNameStr = classNameMatch.group(0)
+			startIdx = classNameStr.find("local")
+			endIdx = classNameStr.find("=")
+			classNameStr = classNameStr[startIdx + 6:endIdx].strip()
+
+			ctorStr = ctorStr.replace(ctorParamMatch.group(0), "ctor:function" + ctorParam + "{\n\tvar self = this;\n\tthis.name = \"" + classNameStr + "\";")
+
 
 	"""
 	# 匹配类的继承1： 
@@ -57,7 +75,7 @@ def stringReplace(str):
 	"""
 	match = re.search('\nlocal\s+(\w+)\s*=\s*class\s*\(\s*\"(\S+?)\"\s*,\s*function\s*\(([\s\S]*?)end\)', tempStr)
 	if match:
-		print ("===== 第一种类型类的声明")
+		# print ("===== 第一种类型类的声明")
 		tempMatch = match.group(0)
 		classNameMatch = re.search('return\s*([\s\S]*?):', tempMatch)
 		classNameStr = classNameMatch.group(0)
@@ -89,7 +107,7 @@ def stringReplace(str):
 	"""
 	match = re.search('\nlocal\s+(\w+)\s*=\s*class\s*\(\s*\"(\S+?)\"\s*\)', tempStr)
 	if match:
-		print ("===== 第三种类型类的声明")
+		# print ("===== 第三种类型类的声明")
 		tempMatch = match.group(0)
 		
 		# 生成最终的构造函数并替换进文件
