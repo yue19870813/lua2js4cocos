@@ -64,6 +64,7 @@ def stringReplace(str):
 			endIdx = classNameStr.find("=")
 			classNameStr = classNameStr[startIdx + 6:endIdx].strip()
 
+			# 替换拼接新构造函数内容
 			ctorStr = ctorStr.replace(ctorParamMatch.group(0), "ctor:function" + ctorParam + "{\n\tvar self = this;\n\tthis.name = \"" + classNameStr + "\";")
 
 
@@ -118,7 +119,7 @@ def stringReplace(str):
 	for k, config in enumerate(rule.convert_rule):
 		tempStr = rule.convert(tempStr, config)
 
-	# print (tempStr)
+	# print (tempStr)s
 
 	return tempStr.encode(encoding='utf-8', errors = 'strict')
 
