@@ -76,16 +76,22 @@ convert_rule = [
 	[ConvertType.pattern, 'for\s*([\w]*?)\s*=\s*(.+?)\s*,\s*(.+?)\s*do', 
 		'for (var \g<1> = \g<2>; \g<1> <= \g<3>; \g<1>++){'],
 
-	# # for k , v in ipairs(...) do ... end -> for (var i=0; i<5; i++) { ... }
+	# for k , v in ipairs(...) do ... end -> for (var i=0; i<5; i++) { ... }
 	# [ConvertType.pattern, '(?<=\n)( *)for\s*([\w]*?)\s*,\s*([\w]*?)\s*in\s*ipairs\s*\(\s*(.*?)\s*\)\s*do',
 	# 	'\g<1>for (var \g<2> = 0; \g<2> < \g<4>.length; \g<2>++)\n\g<1>{\n\g<1>    var \g<3> = \g<4>[\g<2>]'],
-	# # for k , v in pairs(...) do ... end -> for (x in ...) { ... }
-	# [ConvertType.pattern, '(?<=\n)( *)for\s*([\w]*?)\s*,\s*([\w]*?)\s*in\s*pairs\s*\(\s*(.*?)\s*\)\s*do',
-	# 	'\g<1>for (var \g<2> in \g<4>)\n\g<1>{\n\g<1>    var \g<3> = \g<4>[\g<2>]'],
+	# for k , v in pairs(...) do ... end -> for (x in ...) { ... }
+	[ConvertType.pattern, '( *)for\s*([\w]*?)\s*,\s*([\w]*?)\s*in\s*pairs\s*\(\s*(.*?)\s*\)\s*do',
+		'\g<1>for (var \g<2> in \g<4>) {\n\g<1>\tvar \g<3> = \g<4>[\g<2>]'],
 
 
 
 	# 常见关键字转换 例如：loacl end 等
+	# nil -> undefined
+	[ConvertType.pattern, '(?<=\W)nil\s*(==|~=)', 'undefined \g<1>'],
+	[ConvertType.pattern, '(==|~=)\s*nil(?=\W)', '\g<1> undefined'],
+
+	# 字符串拼接 .. -> +
+	[ConvertType.pattern, '([\w\]\)\'\"])\s*\.\.\s*([\w\(\[\'\"])', '\g<1> + \g<2>'],
 	# local -> var
 	[ConvertType.pattern, '(?<=\W)local +(\w+) *= *', 'var \g<1> = '],
 	[ConvertType.pattern, '(?<=\W)local +(\w+)(?=\W)', 'var \g<1>'],
@@ -98,7 +104,7 @@ convert_rule = [
 	# 多行注释 --[==[ 和 --]==]
 	[ConvertType.pattern, '--\[=?\[', '/*'],
 	[ConvertType.pattern, '\]=?\]', '*/'],
-	# 单行注释(必须先处理多行注释)
+	# 单行注释
 	[ConvertType.replace, '--', '//']
 
 ]
