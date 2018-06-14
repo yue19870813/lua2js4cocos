@@ -10,7 +10,7 @@ __author__ = 'ituuz'
 转换规则脚本，这里配置各种转换的规则。
 """
 
-ConvertType = Enum('ConvertType', ('replace', 'pattern', 'classFunc', 'localFunc'))
+ConvertType = Enum('ConvertType', ('replace', 'pattern', 'classFunc'))
 
 convert_rule = [
 
@@ -19,7 +19,7 @@ convert_rule = [
 	# return 语句
 	[ConvertType.pattern, '\nreturn *(\w+)', '\n// return \g<1>'],
 	# 原来的对象 local Cheat = { };
-	[ConvertType.pattern, '\nlocal *(\w+) *= *\{', '\n// var \g<1> = {'],
+	#[ConvertType.pattern, '\nlocal *(\w+) *= *\{', '\n// var \g<1> = {'],
 
 
 	# 处理函数相关问题
@@ -42,6 +42,25 @@ convert_rule = [
 	[ConvertType.pattern, '(\s+)not(\s+)', '\g<1>!\g<2>'],
 
 	# 处理 if else  for  while 等
+	[ConvertType.pattern, '(?<=\W)(if|while|until)\(', '\g<1> ('],
+	[ConvertType.pattern, '\)(then|do)(?=\W)', ') \g<1>'],
+	# lua : if ( condition ) then ... elseif ( condition ) then ... else ...end
+	# js  : if (condition 1) { ... } else if (condition 2) { ... } else { ... }
+	# 换行的else -> } else {
+	[ConvertType.pattern, '( *)else *(?=\n)', '}else{'],
+	# 同上,不在开头的else
+	[ConvertType.pattern, '(?<=\n)( *)(\w.*?) +else *(?=\n)', '\g<1>\g<2>\n\g<1>}\n\g<1>else\n\g<1>{'],
+	# 其他的else,不换行.上面两个替换之后都是(\n *else\n)的形式
+	[ConvertType.pattern, '(?<=\W)else(--|//| +)', '} else {\g<1>'],
+
+	# if -> if (
+	[ConvertType.pattern, '(?<=\W)if\s+', 'if ('],
+	# elseif -> } else if (
+	[ConvertType.pattern, '(?<=\n)( *)elseif\s+', '\g<1>}\n\g<1>else if ('],
+	[ConvertType.pattern, '(?<=\W)elseif\s+', '} else if ('],
+	# then -> ) {
+	[ConvertType.pattern, '(?<=\n)( *)(\w.*\S) +then *(?=\n)', '\g<1>\g<2>)\n\g<1>{'],
+	[ConvertType.pattern, '(?<=\W)then(?=\W)', ') {'],
 
 	# 常见关键字转换 例如：loacl end 等
 	# local -> var
