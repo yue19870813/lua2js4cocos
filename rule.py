@@ -10,7 +10,7 @@ __author__ = 'ituuz'
 转换规则脚本，这里配置各种转换的规则。
 """
 
-ConvertType = Enum('ConvertType', ('replace', 'pattern', 'classFunc'))
+ConvertType = Enum('ConvertType', ('replace', 'pattern', 'classFunc', 'localFunc'))
 
 convert_rule = [
 
@@ -27,7 +27,11 @@ convert_rule = [
 	[ConvertType.pattern, '(?<=\W)local +(\w+)(?=\W)', 'var \g<1>'],
 
 	# 处理函数相关问题
+	# 处理匿名函数
+	[ConvertType.pattern, 'function\s*(\((.*?)\))', 'function\g<1>{'],
+	# 处理类函数
 	[ConvertType.classFunc, '', ''],
+	# [ConvertType.anonymousFunc, '( *)function\s+\(([\s\S]*?)\)', '( *)function\s+\(([\s\S]*?)\)\{'],
 	# 匿名函数 function() ... end -> function() { ... }
 	# 用([\w\{\(\:\.])做了限定,避免注释中的funtion()
 	# [ConvertType.pattern, '(?<=\n)( *)([\w\{\(\:\.])(.*?)function\s*\((.*?)\)', '\g<1>\g<2>\g<3>function(\g<4>)\n\g<1>{'],
@@ -55,9 +59,9 @@ convert_rule = [
 
 
 	# end -> }
-	# [ConvertType.pattern, '(?<=\n)end *(?=\n)', '}'],
+	[ConvertType.pattern, '(?<=\n)end *(?=\n)', '}'],
 	# 普通的end,可能是函数的,也可能是if,for,while的
-	# [ConvertType.pattern, '(?<=\W)end(?=\W)', '}'],
+	[ConvertType.pattern, '(?<=\W)end(?=\W)', '}'],
 
 	# 多行注释 --[==[ 和 --]==]
 	[ConvertType.pattern, '--\[=?\[', '/*'],
@@ -86,8 +90,9 @@ def convertClassFunction(buf):
 		# 将lua类函数替换成js类函数格式
 		buf = buf.replace(matchStr, className + ".prototype." + functionName + "=function" + paramStr + "{")
 		# 递归查找下一个类函数
-		match = re.search('(?<=\n)( *)function\s+([\w]+?)[.:]([\w]+?) *\(([\s\S]*?)\)', buf)
+		match = re.search('(?<=\n)( *)function\s*([\w]+?)[.:]([\w]+?) *\(([\s\S]*?)\)', buf)
 	return buf
+
 
 # 内容替换逻辑
 def convert(buf, ruleItem):
@@ -95,7 +100,7 @@ def convert(buf, ruleItem):
 		buf = buf.replace(ruleItem[1], ruleItem[2])
 	elif ruleItem[0] == ConvertType.pattern:	# 正则表达式替换
 		buf = re.sub(ruleItem[1], ruleItem[2], buf)
-	elif ruleItem[0] == ConvertType.classFunc:	# 特殊处理：函数转换
+	elif ruleItem[0] == ConvertType.classFunc:	# 特殊处理：类函数转换
 		buf = convertClassFunction(buf)
 	return buf
 
