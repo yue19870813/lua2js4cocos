@@ -21,28 +21,14 @@ convert_rule = [
 	# 原来的对象 local Cheat = { };
 	[ConvertType.pattern, '\nlocal *(\w+) *= *\{', '\n// var \g<1> = {'],
 
-	# 常见关键字转换 例如：loacl end 等
-	# local -> var
-	[ConvertType.pattern, '(?<=\W)local +(\w+) *= *', 'var \g<1> = '],
-	[ConvertType.pattern, '(?<=\W)local +(\w+)(?=\W)', 'var \g<1>'],
 
 	# 处理函数相关问题
 	# 处理匿名函数
 	[ConvertType.pattern, 'function\s*(\((.*?)\))', 'function\g<1>{'],
 	# 处理类函数
 	[ConvertType.classFunc, '', ''],
-	# [ConvertType.anonymousFunc, '( *)function\s+\(([\s\S]*?)\)', '( *)function\s+\(([\s\S]*?)\)\{'],
-	# 匿名函数 function() ... end -> function() { ... }
-	# 用([\w\{\(\:\.])做了限定,避免注释中的funtion()
-	# [ConvertType.pattern, '(?<=\n)( *)([\w\{\(\:\.])(.*?)function\s*\((.*?)\)', '\g<1>\g<2>\g<3>function(\g<4>)\n\g<1>{'],
-	# 局部函数 lua : local function callFunc() ... end -> js : var clickOkCallback = function() { ... }
-	# [ConvertType.pattern, '(?<=\n)( *)local\s*function\s*(\w+?)\(([\s\S]*?)\)', '\g<1>var \g<2> = function(\g<3>)\n\g<1>{'],
-	# [ConvertType.pattern, '(?<=\n)( *)function\s+([\w]+?):(ctor) *\(([\s\S]*?)\)',
-	# 	'\g<1>\g<3> : function(\g<4>)\n\g<1>{\n    \g<1>this._super(\g<4>)'],
-	# # 类函数 function GYPlayJI.PlayChong(pChair) ... end -> PlayChong : function(pChair) { ... }
-	# [ConvertType.pattern, '(?<=\n)( *)function\s+([\w]+?)[.:]([\w]+?) *\(([\s\S]*?)\)',
-	# 	'\g<1>\g<3> : function(\g<4>)\n\g<1>{'],
-
+	# 局部函数 lua : local function callFunc() . -> js : function clickOkCallback(...) { 
+	[ConvertType.pattern, 'local\s*function\s*(\w+?)\(([\s\S]*?)\)', 'function (\g<2>) {'],
 
 	########## 逻辑 ##########
 	# 统一先处理下空格更好匹配
@@ -57,6 +43,10 @@ convert_rule = [
 
 	# 处理 if else  for  while 等
 
+	# 常见关键字转换 例如：loacl end 等
+	# local -> var
+	[ConvertType.pattern, '(?<=\W)local +(\w+) *= *', 'var \g<1> = '],
+	[ConvertType.pattern, '(?<=\W)local +(\w+)(?=\W)', 'var \g<1>'],
 
 	# end -> }
 	[ConvertType.pattern, '(?<=\n)end *(?=\n)', '}'],
