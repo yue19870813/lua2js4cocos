@@ -62,6 +62,29 @@ convert_rule = [
 	[ConvertType.pattern, '(?<=\n)( *)(\w.*\S) +then *(?=\n)', '\g<1>\g<2>)\n\g<1>{'],
 	[ConvertType.pattern, '(?<=\W)then(?=\W)', ') {'],
 
+	# for 循环
+	# lua : for init,max/min value, increment do ... end eg: for i=10,1,-1 do print(i) end
+	# lua : for k , v in ipairs( list ) do ... end
+	# js  : for (var i=0; i<5; i++) { ... }
+	# js  : for (x in list) { txt=txt + x }
+	# for i=10,1,-1 do ... end -> for (var i=10; i>=1; i--) { ... }
+	# [ConvertType.pattern, '(?<=\n)( *)for\s*([\w]*?)\s*=\s*(.+?)\s*,\s*(.+?)\s*,\s*-(.+?)\s+do',
+	# 	'\g<1>'+'\n\g<1>for (var \g<2> = \g<3>; \g<2> >= \g<4>; \g<2> -= \g<5>)\n\g<1>{'],
+	# [ConvertType.pattern, '(?<=\n)( *)for\s*([\w]*?)\s*=\s*(.+?)\s*,\s*(.+?)\s*,\s*(.+?)\s+do',
+	# 	'\g<1>'+'\n\g<1>for (var \g<2> = \g<3>; \g<2> <= \g<4>; \g<2> += \g<5>)\n\g<1>{'],
+	# for i=1,5 do ... end -> for (var i=0; i<=5; i++) { ... }
+	[ConvertType.pattern, 'for\s*([\w]*?)\s*=\s*(.+?)\s*,\s*(.+?)\s*do', 
+		'for (var \g<1> = \g<2>; \g<1> <= \g<3>; \g<1>++){'],
+
+	# # for k , v in ipairs(...) do ... end -> for (var i=0; i<5; i++) { ... }
+	# [ConvertType.pattern, '(?<=\n)( *)for\s*([\w]*?)\s*,\s*([\w]*?)\s*in\s*ipairs\s*\(\s*(.*?)\s*\)\s*do',
+	# 	'\g<1>for (var \g<2> = 0; \g<2> < \g<4>.length; \g<2>++)\n\g<1>{\n\g<1>    var \g<3> = \g<4>[\g<2>]'],
+	# # for k , v in pairs(...) do ... end -> for (x in ...) { ... }
+	# [ConvertType.pattern, '(?<=\n)( *)for\s*([\w]*?)\s*,\s*([\w]*?)\s*in\s*pairs\s*\(\s*(.*?)\s*\)\s*do',
+	# 	'\g<1>for (var \g<2> in \g<4>)\n\g<1>{\n\g<1>    var \g<3> = \g<4>[\g<2>]'],
+
+
+
 	# 常见关键字转换 例如：loacl end 等
 	# local -> var
 	[ConvertType.pattern, '(?<=\W)local +(\w+) *= *', 'var \g<1> = '],
