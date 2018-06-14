@@ -68,19 +68,18 @@ convert_rule = [
 	# js  : for (var i=0; i<5; i++) { ... }
 	# js  : for (x in list) { txt=txt + x }
 	# for i=10,1,-1 do ... end -> for (var i=10; i>=1; i--) { ... }
-	# [ConvertType.pattern, '(?<=\n)( *)for\s*([\w]*?)\s*=\s*(.+?)\s*,\s*(.+?)\s*,\s*-(.+?)\s+do',
-	# 	'\g<1>'+'\n\g<1>for (var \g<2> = \g<3>; \g<2> >= \g<4>; \g<2> -= \g<5>)\n\g<1>{'],
-	# [ConvertType.pattern, '(?<=\n)( *)for\s*([\w]*?)\s*=\s*(.+?)\s*,\s*(.+?)\s*,\s*(.+?)\s+do',
-	# 	'\g<1>'+'\n\g<1>for (var \g<2> = \g<3>; \g<2> <= \g<4>; \g<2> += \g<5>)\n\g<1>{'],
+	[ConvertType.pattern, '(\t*)for\s*([\w]*?)\s*=\s*(.+?)\s*,\s*(.+?)\s*,\s*-(.+?)\s+do',
+		'\g<1>'+'\n\g<1>for (var \g<2> = \g<3>; \g<2> >= \g<4>; \g<2> -= \g<5>) {'],
+	[ConvertType.pattern, '(\t*)for\s*([\w]*?)\s*=\s*(.+?)\s*,\s*(.+?)\s*,\s*(.+?)\s+do',
+		'\g<1>'+'\n\g<1>for (var \g<2> = \g<3>; \g<2> <= \g<4>; \g<2> += \g<5>) {'],
 	# for i=1,5 do ... end -> for (var i=0; i<=5; i++) { ... }
-	[ConvertType.pattern, 'for\s*([\w]*?)\s*=\s*(.+?)\s*,\s*(.+?)\s*do', 
-		'for (var \g<1> = \g<2>; \g<1> <= \g<3>; \g<1>++){'],
-
+	[ConvertType.pattern, '(\t*)for\s*([\w]*?)\s*=\s*(.+?)\s*,\s*(.+?)\s*do', 
+		'\g<1>for (var \g<2> = \g<3>; \g<2> <= \g<4>; \g<2>++){'],
 	# for k , v in ipairs(...) do ... end -> for (var i=0; i<5; i++) { ... }
-	# [ConvertType.pattern, '(?<=\n)( *)for\s*([\w]*?)\s*,\s*([\w]*?)\s*in\s*ipairs\s*\(\s*(.*?)\s*\)\s*do',
-	# 	'\g<1>for (var \g<2> = 0; \g<2> < \g<4>.length; \g<2>++)\n\g<1>{\n\g<1>    var \g<3> = \g<4>[\g<2>]'],
+	[ConvertType.pattern, '(\t*)for\s*([\w]*?)\s*,\s*([\w]*?)\s*in\s*ipairs\s*\(\s*(.*?)\s*\)\s*do',
+		'\g<1>for (var \g<2> = 0; \g<2> < \g<4>.length; \g<2>++) {\n\g<1>\tvar \g<3> = \g<4>[\g<2>]'],
 	# for k , v in pairs(...) do ... end -> for (x in ...) { ... }
-	[ConvertType.pattern, '( *)for\s*([\w]*?)\s*,\s*([\w]*?)\s*in\s*pairs\s*\(\s*(.*?)\s*\)\s*do',
+	[ConvertType.pattern, '(\t*)for\s*([\w]*?)\s*,\s*([\w]*?)\s*in\s*pairs\s*\(\s*(.*?)\s*\)\s*do',
 		'\g<1>for (var \g<2> in \g<4>) {\n\g<1>\tvar \g<3> = \g<4>[\g<2>]'],
 
 
