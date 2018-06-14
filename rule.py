@@ -10,7 +10,7 @@ __author__ = 'ituuz'
 转换规则脚本，这里配置各种转换的规则。
 """
 
-ConvertType = Enum('ConvertType', ('replace', 'pattern', 'function'))
+ConvertType = Enum('ConvertType', ('replace', 'pattern', 'classFunc'))
 
 convert_rule = [
 
@@ -27,7 +27,7 @@ convert_rule = [
 	[ConvertType.pattern, '(?<=\W)local +(\w+)(?=\W)', 'var \g<1>'],
 
 	# 处理函数相关问题
-	[ConvertType.function, '', ''],
+	[ConvertType.classFunc, '', ''],
 	# 匿名函数 function() ... end -> function() { ... }
 	# 用([\w\{\(\:\.])做了限定,避免注释中的funtion()
 	# [ConvertType.pattern, '(?<=\n)( *)([\w\{\(\:\.])(.*?)function\s*\((.*?)\)', '\g<1>\g<2>\g<3>function(\g<4>)\n\g<1>{'],
@@ -67,11 +67,11 @@ convert_rule = [
 
 ]
 
-# 对函数进行转换
+# 对类函数进行转换
 # function Cheat:delete()  ->  Cheat.prototype.delete = function() {
-def convertFunction(buf):
+def convertClassFunction(buf):
 	match = re.search('(?<=\n)( *)function\s+([\w]+?)[.:]([\w]+?) *\(([\s\S]*?)\)', buf)
-
+	# 循环递归将类函数逐一处理
 	while match:
 		matchStr = match.group(0)
 		# 获取类名和函数名
@@ -95,8 +95,8 @@ def convert(buf, ruleItem):
 		buf = buf.replace(ruleItem[1], ruleItem[2])
 	elif ruleItem[0] == ConvertType.pattern:	# 正则表达式替换
 		buf = re.sub(ruleItem[1], ruleItem[2], buf)
-	elif ruleItem[0] == ConvertType.function:	# 特殊处理：函数转换
-		buf = convertFunction(buf)
+	elif ruleItem[0] == ConvertType.classFunc:	# 特殊处理：函数转换
+		buf = convertClassFunction(buf)
 	return buf
 
 
