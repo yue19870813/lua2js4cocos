@@ -23,10 +23,11 @@ convert_rule = [
 
 
 	# 处理函数相关问题
-	# 处理匿名函数
-	[ConvertType.pattern, 'function\s*(\((.*?)\))', 'function\g<1>{'],
+	
 	# 处理类函数
 	[ConvertType.classFunc, '', ''],
+	# 处理匿名函数
+	[ConvertType.pattern, '([\s|,]+)function\s*(\((.*?)\))', '\g<1>function\g<2>{'],
 	# 局部函数 lua : local function callFunc() . -> js : function clickOkCallback(...) { 
 	[ConvertType.pattern, 'local\s*function\s*(\w+?)\(([\s\S]*?)\)', 'function (\g<2>) {'],
 
@@ -82,6 +83,21 @@ convert_rule = [
 	[ConvertType.pattern, '(\t*)for\s*([\w]*?)\s*,\s*([\w]*?)\s*in\s*pairs\s*\(\s*(.*?)\s*\)\s*do',
 		'\g<1>for (var \g<2> in \g<4>) {\n\g<1>\tvar \g<3> = \g<4>[\g<2>]'],
 
+	# while 循环
+	# lua : while (condition) do statement(s) end
+	# repeat statement(s) until( condition )
+	# js  : while (i<5) { ... }
+	# js  : do { ... } while (condition)
+	[ConvertType.pattern, 'while\s+', 'while ('],
+	# do -> ) {
+	[ConvertType.pattern, '(\t*)(\w.*\S)?(?(2) )+do *(?=\n)', '\g<1>\g<2>) {'],
+	[ConvertType.pattern, 'do(?=\W)', ') {'],
+	# repeat -> do {
+	[ConvertType.pattern, '(\t*)repeat *(?=\n)', '\g<1>do {'],
+	[ConvertType.pattern, 'repeat(?=\W)', 'do {'],
+	# until ... -> } while ( ... )
+	[ConvertType.pattern, '(\t*)until +(.+?) *(--|//|\n)', '\g<1>} while (\g<2>)\g<3>'],
+	[ConvertType.pattern, '(\t*)(\w.*\S) +until +(.+?) *(--|//|\n)', '\g<1>\g<2> } while (\g<3>)\g<4>'],
 
 
 	# 常见关键字转换 例如：loacl end 等
