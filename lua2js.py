@@ -136,7 +136,9 @@ def convertLua2Js(luaFilePath, luaFileName):
 
 	# 保存文件为js文件
 	dpath = luaFilePath.replace(src_path, dst_path)
+
 	file_dst = os.path.join(dpath, os.path.splitext(luaFileName)[0] + '.js')
+	print ("写入文件：" + file_dst)
 
 	# 判断文件是否存在，如果存在则删除旧文件
 	b = os.path.exists(dpath)
