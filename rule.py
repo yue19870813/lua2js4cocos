@@ -149,7 +149,11 @@ convert_rule = [
 	[ConvertType.pattern, 'self\.', 'this.'],
 
 	# 匿名函数中的this换成self
-	# 
+	# gt6.addBtnPressedListener(btnClose, function(){
+	# 	gt6.soundEngine.playEffect("common/SpecOk", false, "2DDZ")
+	# 	this.setCheatVisible(false) // 关闭按钮只是隐藏，目的是通过playscene来删除。方便重复点击。
+	# end)
+	[ConvertType.pattern, '(\(\w* *, *function\(\w*\)\{[\s\S]*)this\.([\s\S]+end\))', '\g<1>self.\g<2>'],
 
 	# 字符串拼接 .. -> +
 	[ConvertType.pattern, '([\w\]\)\'\"])\s*\.\.\s*([\w\(\[\'\"])', '\g<1> + \g<2>'],
