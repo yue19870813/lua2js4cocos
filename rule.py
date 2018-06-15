@@ -16,10 +16,11 @@ convert_rule = [
 
 	# 注释一部分代码
 	[ConvertType.pattern, 'local *(\w+) *= *(require|import).*?\n', ''],
+	[ConvertType.pattern, '(require\(.*\))', '//\g<1>'],
 	# return 语句
 	[ConvertType.pattern, '\nreturn *(\w+)', '\n// return \g<1>'],
 	# 原来的对象 local Cheat = { };
-	#[ConvertType.pattern, '\nlocal *(\w+) *= *\{', '\n// var \g<1> = {'],
+	# [ConvertType.pattern, '\nlocal *(\w+) *= *\{', '\n// var \g<1> = {'],
 
 
 	# 处理函数相关问题
@@ -191,7 +192,7 @@ def convertClassFunction(buf):
 		paramMatch = re.search('\(([\s\S]*?)\)', matchStr)
 		paramStr = paramMatch.group(0)
 		# 将lua类函数替换成js类函数格式
-		buf = buf.replace(matchStr, className + ".prototype." + functionName + "=function" + paramStr + "{")
+		buf = buf.replace(matchStr, className + ".prototype." + functionName + "=function" + paramStr + "{ \n\tvar self = this")
 		# 递归查找下一个类函数
 		match = re.search('(?<=\n)( *)function\s*([\w]+?)[.:]([\w]+?) *\(([\s\S]*?)\)', buf)
 	return buf
