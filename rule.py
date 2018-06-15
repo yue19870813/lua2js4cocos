@@ -100,10 +100,56 @@ convert_rule = [
 	[ConvertType.pattern, '(\t*)(\w.*\S) +until +(.+?) *(--|//|\n)', '\g<1>\g<2> } while (\g<3>)\g<4>'],
 
 
+	# lua中点系统函数转成js系统函数
+	# 数组长度 # -> .length
+	# [mode_re, '#([a-zA-Z0-9_\.]+)', '\g<1>.length'],
+	[ConvertType.pattern, '# *([\w\.\[\]\'\"]+)', '\g<1>.length'],
+	# table.insert(table, pos, value) -> arrayObject.splice(index,howmany,item1,.....,itemX)
+	[ConvertType.pattern, 'table.insert\s*\(\s*(.*?)\s*,\s*(\w.*?)\s*,\s*([\s\S]*?)\s*\)', '\g<1>.splice(\g<2>, 0, \g<3>)'],
+	# table.insert(table, value) -> arrayObject.push(newelement1,newelement2,....,newelementX)
+	[ConvertType.pattern, 'table.insert\s*\(\s*(.*?)\s*,\s*([\s\S]*?)\s*\)', '\g<1>.push(\g<2>)'],
+	# table.remove(table, pos) -> arrayObject.splice(index,1)
+	[ConvertType.pattern, 'table.remove\s*\(\s*(.*?)\s*,\s*(\w.*?)\s*\)', '\g<1>.splice(\g<2>, 1)'],
+	# table.remove(table) -> arrayObject.pop()
+	[ConvertType.pattern, 'table.remove\s*\(\s*(.*?)\s*\)', '\g<1>.pop()'],
+	# table.removebyvalue
+	# table.sort(table, comp) -> arrayObject.sort(sortby)
+	[ConvertType.pattern, 'table.sort\s*\(\s*(.*?)\s*,\s*([\s\S]*?)\)', '\g<1>.sort(\g<2>)'],
+	# table.indexof
+	# table.nums(xxx) -> xxx.length
+	[ConvertType.pattern, 'table.nums *\( *([\w\.\[\]\'\"]+) *\)', '\g<1>.length'],
+	# math.floor -> Math.floor
+	[ConvertType.pattern, 'math\.', 'Math.'],
+	# print(...) -> log(...)
+	[ConvertType.pattern, 'print *\(', 'gt6.log('],
+	# tostring -> String
+	[ConvertType.pattern, 'tostring *\(', 'String('],
+	[ConvertType.pattern, 'tonumber *\(', 'Number('],
+
+
+	# 函数调用修改
+	# soundEngine:playEffect()  -> soundEngine.playEffect()
+	[ConvertType.pattern, '([ |\t|\w])(\w+):(\w+\(\w*\))', '\g<1>\g<2>.\g<3>'],
+
+
+	# 匿名函数中的this换成self
+	# 
+
+
+	# 特殊的函数接口改变：lua中与js中api转换
+	#
+
+
+	# 自定义函数接口的转换
+	# gt6.soundEngine:playEffect(  ->  gt6.soundEngine.playEffect(
+	[ConvertType.replace, 'gt6.soundEngine:playEffect(', 'gt6.soundEngine.playEffect('],
+
+
 	# 常见关键字转换 例如：loacl end 等
-	# nil -> undefined
-	[ConvertType.pattern, '(?<=\W)nil\s*(==|~=)', 'undefined \g<1>'],
-	[ConvertType.pattern, '(==|~=)\s*nil(?=\W)', '\g<1> undefined'],
+	# nil -> null
+	[ConvertType.pattern, 'nil(?=\W)', 'null'],
+	# 关键词 self -> this (函数开头加了var self = this 这里就不要处理了)
+	[ConvertType.pattern, 'self\.', 'this.'],
 
 	# 字符串拼接 .. -> +
 	[ConvertType.pattern, '([\w\]\)\'\"])\s*\.\.\s*([\w\(\[\'\"])', '\g<1> + \g<2>'],
