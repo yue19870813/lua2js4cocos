@@ -27,7 +27,7 @@ convert_rule = [
 	# 处理类函数
 	[ConvertType.classFunc, '', ''],
 	# 处理匿名函数
-	[ConvertType.pattern, '([\s|,]+)function\s*(\((.*?)\))', '\g<1>function\g<2>{'],
+	[ConvertType.pattern, '([\(|\s|,]+)function\s*(\((.*?)\))', '\g<1>function\g<2>{'],
 	# 局部函数 lua : local function callFunc() . -> js : function clickOkCallback(...) { 
 	[ConvertType.pattern, 'local\s*function\s*(\w+?)\(([\s\S]*?)\)', 'function (\g<2>) {'],
 
@@ -132,11 +132,8 @@ convert_rule = [
 	[ConvertType.pattern, '([ |\t|\w])(\w+):(\w+\(\w*\))', '\g<1>\g<2>.\g<3>'],
 
 
-	# 匿名函数中的this换成self
-	# 
 
-
-	# 特殊的函数接口改变：lua中与js中api转换
+	# 特殊的函数接口改变：lua中与js中cocos引擎中的api转换
 	#
 
 
@@ -150,6 +147,9 @@ convert_rule = [
 	[ConvertType.pattern, 'nil(?=\W)', 'null'],
 	# 关键词 self -> this (函数开头加了var self = this 这里就不要处理了)
 	[ConvertType.pattern, 'self\.', 'this.'],
+
+	# 匿名函数中的this换成self
+	# 
 
 	# 字符串拼接 .. -> +
 	[ConvertType.pattern, '([\w\]\)\'\"])\s*\.\.\s*([\w\(\[\'\"])', '\g<1> + \g<2>'],
