@@ -19,8 +19,10 @@ convert_rule = [
 	[ConvertType.pattern, '(require\(.*\))', '//\g<1>'],
 	# return 语句
 	[ConvertType.pattern, '\nreturn *(\w+)', '\n// return \g<1>'],
-	# 原来的对象 local Cheat = { };
-	# [ConvertType.pattern, '\nlocal *(\w+) *= *\{', '\n// var \g<1> = {'],
+	# var GamePlayUtils = gt6.GamePlayUtils
+	[ConvertType.pattern, '\nlocal *\w+ *= *.*(exports|gt6).*?\n', '\n// local\n'],
+	# 特殊写死一个
+	[ConvertType.replace, 'local Utils6 = cc.exports.Utils6', '// local Utils6 = cc.exports.Utils6'],
 
 
 	# 处理函数相关问题
