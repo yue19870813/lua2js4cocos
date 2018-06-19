@@ -141,6 +141,9 @@ convert_rule = [
 	# 自定义函数接口的转换
 	# gt6.soundEngine:playEffect(  ->  gt6.soundEngine.playEffect(
 	[ConvertType.replace, 'gt6.soundEngine:playEffect(', 'gt6.soundEngine.playEffect('],
+	# 特殊替换，lua中返回值有两个的替换
+	[ConvertType.replace, 'local value , color = GamePlayUtils.changePk(msg)', 
+	'var tmp = GamePlayUtils.changePk(msg)\n\tlet value , color\n\tif(tmp){\n\t\tvalue = tmp[0]\n\t\tcolor = tmp[1]\n\t}'],
 
 
 	# 常见关键字转换 例如：loacl end 等
@@ -198,18 +201,6 @@ def convertClassFunction(buf):
 	return buf
 
 
-# 将lua中冒号函数调用方式转换为逗号调用方式
-def convertFuncCallType(buf):
-
-	match = re.search('([ |\t|\.])+(\w+):(\w+\(\w*)', buf)
-	while match:
-		matchStr = match.group(0)
-
-		buf = buf.replace(matchStr, "#####")
-		print (matchStr)
-		match = re.search('([ |\t|\.])+(\w+):(\w+\(\w*)', buf)
-	return buf
-
 
 # 内容替换逻辑
 def convert(buf, ruleItem):
@@ -219,8 +210,6 @@ def convert(buf, ruleItem):
 		buf = re.sub(ruleItem[1], ruleItem[2], buf)
 	elif ruleItem[0] == ConvertType.classFunc:	# 特殊处理：类函数转换
 		buf = convertClassFunction(buf)
-	elif ruleItem[0] == ConvertType.callFunc:
-		buf = convertFuncCallType(buf)
 	return buf
 
 
