@@ -65,7 +65,14 @@ def stringReplace(str):
 			classNameStr = classNameStr[startIdx + 6:endIdx].strip()
 
 			# 替换拼接新构造函数内容
-			ctorStr = ctorStr.replace(ctorParamMatch.group(0), "ctor:function" + ctorParam + "{\n\tvar self = this;\n\tthis.name = \"" + classNameStr + "\";")
+			if ctorStr.find(".super(") == -1 and ctorStr.find("._super(") == -1:
+				ctorStr = ctorStr.replace(ctorParamMatch.group(0), "ctor:function" + ctorParam + "{\n\tvar self = this;\n\tthis._super();\n\tthis.name = \"" + classNameStr + "\";")
+			else:
+				# PlayScene.super.ctor(self, xx) -> this._super(self, xx)
+				ctorStr = re.sub('([ |\t|\.])+(\w+)\.super\.ctor\s*(\([\s\S]*?\))', '\g<1>this._super\g<3>', ctorStr)
+				ctorStr = ctorStr.replace(ctorParamMatch.group(0), "ctor:function" + ctorParam + "{\n\tvar self = this;\n\tthis.name = \"" + classNameStr + "\";")
+
+				
 
 
 	"""
