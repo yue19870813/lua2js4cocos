@@ -10,7 +10,7 @@ __author__ = 'ituuz'
 转换规则脚本，这里配置各种转换的规则。
 """
 
-ConvertType = Enum('ConvertType', ('replace', 'pattern', 'classFunc'))
+ConvertType = Enum('ConvertType', ('replace', 'pattern', 'classFunc', 'callFunc'))
 
 convert_rule = [
 
@@ -128,10 +128,10 @@ convert_rule = [
 	[ConvertType.pattern, 'tonumber *\(', 'Number('],
 
 
-	# 函数调用修改
+	# 函数调用修改 将冒号调用修改为点号调用
 	# soundEngine:playEffect()  -> soundEngine.playEffect()
-	[ConvertType.pattern, '([ |\t|\w])(\w+):(\w+\(\w*\))', '\g<1>\g<2>.\g<3>'],
-
+	#[ConvertType.pattern, '([ |\t|\.|\w])(\w+):(\w+\(\w*\))', '\g<1>\g<2>.\g<3>'],
+	 [ConvertType.pattern, '([,|\(| |\t|\.])+(\w+):(\w+\(\w*)', '\g<1>\g<2>.\g<3>'],
 
 
 	# 特殊的函数接口改变：lua中与js中cocos引擎中的api转换
@@ -198,6 +198,19 @@ def convertClassFunction(buf):
 	return buf
 
 
+# 将lua中冒号函数调用方式转换为逗号调用方式
+def convertFuncCallType(buf):
+
+	match = re.search('([ |\t|\.])+(\w+):(\w+\(\w*)', buf)
+	while match:
+		matchStr = match.group(0)
+
+		buf = buf.replace(matchStr, "#####")
+		print (matchStr)
+		match = re.search('([ |\t|\.])+(\w+):(\w+\(\w*)', buf)
+	return buf
+
+
 # 内容替换逻辑
 def convert(buf, ruleItem):
 	if ruleItem[0] == ConvertType.replace:		# 字符串替换
@@ -206,6 +219,8 @@ def convert(buf, ruleItem):
 		buf = re.sub(ruleItem[1], ruleItem[2], buf)
 	elif ruleItem[0] == ConvertType.classFunc:	# 特殊处理：类函数转换
 		buf = convertClassFunction(buf)
+	elif ruleItem[0] == ConvertType.callFunc:
+		buf = convertFuncCallType(buf)
 	return buf
 
 
