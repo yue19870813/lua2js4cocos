@@ -131,11 +131,17 @@ convert_rule = [
 	# 函数调用修改 将冒号调用修改为点号调用
 	# soundEngine:playEffect()  -> soundEngine.playEffect()
 	#[ConvertType.pattern, '([ |\t|\.|\w])(\w+):(\w+\(\w*\))', '\g<1>\g<2>.\g<3>'],
-	 [ConvertType.pattern, '([,|\(| |\t|\.])+(\w+):(\w+\(\w*)', '\g<1>\g<2>.\g<3>'],
+	[ConvertType.pattern, '([,|\(| |\t|\.])+(\w+):(\w+\(\w*)', '\g<1>\g<2>.\g<3>'],
 
 
 	# 特殊的函数接口改变：lua中与js中cocos引擎中的api转换
-	#
+	# spriteFrame 获取函数转换
+	# var pkTileSpr = cc.Sprite.createWithSpriteFrameName(pkTileName)
+	# ->
+	# let frame = cc.spriteFrameCache.getSpriteFrame(pkTileName)
+	# let pkTileSpr = cc.Sprite.createWithSpriteFrameName(frame)
+	[ConvertType.pattern, '(local \w+\s*=\s*cc\.Sprite\.createWithSpriteFrameName)\s*\((.*?)\)', 
+	'let frame = cc.spriteFrameCache.getSpriteFrame(\g<2>)\n\t\g<1>(frame)'],
 
 
 	# 自定义函数接口的转换
