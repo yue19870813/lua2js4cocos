@@ -32,7 +32,10 @@ convert_rule = [
 	# 处理匿名函数
 	[ConvertType.pattern, '([\(|\s|,]+)function\s*(\((.*?)\))', '\g<1>function\g<2>{'],
 	# 局部函数 lua : local function callFunc() . -> js : function clickOkCallback(...) { 
-	[ConvertType.pattern, 'local\s*function\s*(\w+?)\(([\s\S]*?)\)', 'function (\g<2>) {'],
+	[ConvertType.pattern, 'local\s*function\s*(\w+?)\(([\s\S]*?)\)', 'function \g<1> (\g<2>) {'],
+	# 处理动态参数的函数列表转换 ( ... ) -> (...args)
+	[ConvertType.pattern, '\( *\.\.\. *\)', '(...args)'],
+
 
 	########## 逻辑 ##########
 	# 统一先处理下空格更好匹配
@@ -152,7 +155,11 @@ convert_rule = [
 	# 特殊替换，lua中返回值有两个的替换
 	[ConvertType.replace, 'local value , color = GamePlayUtils.changePk(msg)', 
 	'var tmp = GamePlayUtils.changePk(msg)\n\tlet value , color\n\tif(tmp){\n\t\tvalue = tmp[0]\n\t\tcolor = tmp[1]\n\t}'],
-
+	# 特殊格式的转换
+	[ConvertType.replace, 'and \{true\} or \{false\})[1]', '&& [true] || [false])[1]'],
+	# [mjTilesReferPos.holdSpace.y] || [mjTilesReferPos.holdSpace.x])[1]
+	[ConvertType.replace, 'and \{mjTilesReferPos.holdSpace.y\} or \{mjTilesReferPos.holdSpace.x\})[1]', 
+	'&& [mjTilesReferPos.holdSpace.y] || [mjTilesReferPos.holdSpace.x])[1]'],
 
 	# 常见关键字转换 例如：loacl end 等
 	# nil -> null
