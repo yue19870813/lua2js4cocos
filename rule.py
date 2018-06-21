@@ -10,7 +10,7 @@ __author__ = 'ituuz'
 转换规则脚本，这里配置各种转换的规则。
 """
 
-ConvertType = Enum('ConvertType', ('replace', 'pattern', 'classFunc', 'callFunc'))
+ConvertType = Enum('ConvertType', ('replace', 'pattern', 'classFunc', 'callFunc', 'array'))
 
 convert_rule = [
 
@@ -23,10 +23,19 @@ convert_rule = [
 	[ConvertType.pattern, '\nlocal *\w+ *= *.*(exports|gt6).*?\n', '\n// local\n'],
 	# 特殊写死一个
 	[ConvertType.replace, 'local Utils6 = cc.exports.Utils6', '// local Utils6 = cc.exports.Utils6'],
-
+	
+	# 数组的转换问题  ------  数组一直没有找到好的匹配算法  -----------
+	# local replay_seat_info_default = {
+	# 	{centerPos = 360,rotatePara = 270,poin_key = "y"},
+	# 	{centerPos = 360,rotatePara = 90,poin_key = "y"},
+	# 	{centerPos = 640,rotatePara = 0},poin_key = "x",
+	# }
+	# [ConvertType.pattern, '\nlocal *\w+ *= *\{(.|\n)*\}', '==========='],
+	# [ConvertType.array, '', ''],
+	# [ConvertType.pattern, '\n\w+ *= *\\{([\s\S]*?),([\s]*?)([\w]+?)([\s]*?)=([\s\S]*?)\}', '****************'],
+	# [ConvertType.pattern, '', ''],
 
 	# 处理函数相关问题
-	
 	# 处理类函数
 	[ConvertType.classFunc, '', ''],
 	# 处理匿名函数
@@ -137,6 +146,10 @@ convert_rule = [
 	# soundEngine:playEffect()  -> soundEngine.playEffect()
 	#[ConvertType.pattern, '([ |\t|\.|\w])(\w+):(\w+\(\w*\))', '\g<1>\g<2>.\g<3>'],
 	[ConvertType.pattern, '([,|\(| |\t|\.])+(\w+):(\w+\(\w*)', '\g<1>\g<2>.\g<3>'],
+	[ConvertType.pattern, '([,|\(| |\t|\.])+(\w+\(.*\)):(\w+\(\w*)', '\g<1>\g<2>.\g<3>'],
+	[ConvertType.replace, '.getContentSize().width/2 pkLandlord.getContentSize()', 
+	'.getContentSize().width/2, pkLandlord.getContentSize()'],
+
 
 
 	# 特殊的函数接口改变：lua中与js中cocos引擎中的api转换
@@ -155,11 +168,7 @@ convert_rule = [
 	# 特殊替换，lua中返回值有两个的替换
 	[ConvertType.replace, 'local value , color = GamePlayUtils.changePk(msg)', 
 	'var tmp = GamePlayUtils.changePk(msg)\n\tlet value , color\n\tif(tmp){\n\t\tvalue = tmp[0]\n\t\tcolor = tmp[1]\n\t}'],
-	# 特殊格式的转换
-	[ConvertType.replace, 'and \{true\} or \{false\})[1]', '&& [true] || [false])[1]'],
-	# [mjTilesReferPos.holdSpace.y] || [mjTilesReferPos.holdSpace.x])[1]
-	[ConvertType.replace, 'and \{mjTilesReferPos.holdSpace.y\} or \{mjTilesReferPos.holdSpace.x\})[1]', 
-	'&& [mjTilesReferPos.holdSpace.y] || [mjTilesReferPos.holdSpace.x])[1]'],
+
 
 	# 常见关键字转换 例如：loacl end 等
 	# nil -> null
@@ -215,7 +224,28 @@ def convertClassFunction(buf):
 		match = re.search('(?<=\n)( *)function\s*([\w]+?)[.:]([\w]+?) *\(([\s\S]*?)\)', buf)
 	return buf
 
+# 转换lua数组为js数组
+def convertArray(buf):
+	# '\{([\s]*?)([\w]+?)([\s]*?)=([\s\S]*?)\}'
+	match = re.search('\{([\s]*?)([\w]+?)([\s]*?)=([\s\S]*?)\}', buf)
 
+	while match:
+		matchStr = match.group(0)
+		# {centerPos = 360,rotatePara = 270,poin_key = "y"}
+		print ("----------")
+		print (matchStr)
+		idxL = matchStr.find("{")
+		idxR = matchStr.find("}")
+		tempStr = matchStr[idxL + 1:idxR]
+		tempArr = tempStr.split(",");
+
+		it = iter(tempArr)    # 创建迭代器对象
+		for x in it:
+			print ("==========s" + x)
+
+		break
+		# match = re.search('\{([\s]*?)([\w]+?)([\s]*?)=([\s\S]*?)\}', buf)
+	return buf
 
 # 内容替换逻辑
 def convert(buf, ruleItem):
@@ -225,6 +255,8 @@ def convert(buf, ruleItem):
 		buf = re.sub(ruleItem[1], ruleItem[2], buf)
 	elif ruleItem[0] == ConvertType.classFunc:	# 特殊处理：类函数转换
 		buf = convertClassFunction(buf)
+	elif ruleItem[0] == ConvertType.array:
+		buf = convertArray(buf)
 	return buf
 
 
